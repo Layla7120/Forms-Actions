@@ -1,4 +1,5 @@
 "use client";
+import "@/lib/db";
 
 import EnvelopeIcon from "@heroicons/react/24/solid/EnvelopeIcon";
 import LockClosedIcon from "@heroicons/react/24/outline/LockClosedIcon";
