@@ -31,5 +31,5 @@ async function test() {
   console.log(like_add);
 }
 
-test();
+// test();
 export default db;

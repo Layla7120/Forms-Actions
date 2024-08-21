@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id         Int      @id @default(autoincrement())
-  username   String
+  username   String   @unique
   password   String?  @unique
   email      String?  @unique
   bio        String?  @unique
@@ -29,8 +29,8 @@ model Tweet {
 model Like {
   id         Int      @id @default(autoincrement())
   created_at DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     Int
-  tweet      Tweet    @relation(fields: [tweetId], references: [id])
+  tweet      Tweet    @relation(fields: [tweetId], references: [id], onDelete: Cascade)
   tweetId    Int
 }
