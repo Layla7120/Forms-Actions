@@ -16,14 +16,17 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   Like       Like[]
+  tweetId    Int?
 }
 
 model Tweet {
-  id         Int      @id @default(autoincrement())
-  tweet      Int      @unique
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  Like       Like[]
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  photo       String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  Like        Like[]
 }
 
 model Like {

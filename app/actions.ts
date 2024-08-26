@@ -1,83 +1,45 @@
 "use server";
-import db from "@/lib/db";
 import { z } from "zod";
-import bcrypt from "bcrypt";
-import { getIronSession } from "iron-session";
-import { cookies } from "next/headers";
-import { redirect } from "next/dist/server/api-utils";
+import fs from "fs/promises";
+import db from "@/lib/db";
+import getSession from "@/lib/session";
+import { redirect } from "next/navigation";
 
-const checkUniqueUsername = async (username: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      username,
-    },
-  });
-};
-const formSchema = z.object({
-  email: z
-    .string()
-    .email()
-    .regex(/@zod.com/, "Only @zod.com is available"),
-  username: z
-    .string()
-    .min(5)
-    .refine(checkUniqueUsername, "Username already taken"),
-  password: z
-    .string()
-    .min(10)
-    .regex(/\d/, "At least 1 number should be included"),
+const tweetSchema = z.object({
+  title: z.string({
+    required_error: "Title is required",
+  }),
+  description: z.string({
+    required_error: "Description is required",
+  }),
 });
 
-export async function createAccount(prevState: any, formData: FormData) {
+export async function uploadTweet(_: any, formData: FormData) {
   const data = {
-    email: formData.get("email"),
-    username: formData.get("username"),
-    password: formData.get("password"),
+    // photo: formData.get("photo"),
+    title: formData.get("title"),
+    description: formData.get("description"),
   };
-  const result = await formSchema.safeParseAsync(data);
+  // if (data.photo instanceof File) {
+  //   const photoData = await data.photo.arrayBuffer();
+  //   await fs.appendFile(`./public/${data.photo.name}`, Buffer.from(photoData));
+  //   data.photo = `/${data.photo.name}`;
+  // }
+  const result = tweetSchema.safeParse(data);
   if (!result.success) {
     return result.error.flatten();
   } else {
-    const hashedPassword = await bcrypt.hash(result.data.password, 12);
-    const user = await db.user.create({
+    // const session = await getSession();
+    // if (session.id) {
+    const tweet = await db.tweet.create({
       data: {
-        username: result.data.username,
-        email: result.data.email,
-        password: hashedPassword,
+        title: result.data.title,
+        description: result.data.description,
       },
       select: {
         id: true,
       },
     });
-
-    const cookie = await getIronSession(cookies(), {
-      cookieName: "delicious-carrot",
-      password: process.env.COOKIE_PASSWORD!,
-    });
-    //@ts-ignore
-    cookie.id = user.id;
-    await cookie.save();
-  }
-}
-export async function handleForm(prevState: any, formData: FormData) {
-  const data = {
-    email: formData.get("email"),
-    username: formData.get("username"),
-    password: formData.get("password"),
-  };
-  const result = formSchema.safeParse(data);
-  console.log("result", result);
-  if (!result.success) {
-    const formatted = result.error?.format();
-    console.log(formatted, result.error);
-    return {
-      success: result.success,
-      error: result.error.flatten(),
-    };
-  } else {
-    return {
-      success: result.success,
-      error: undefined,
-    };
+    // }
   }
 }
